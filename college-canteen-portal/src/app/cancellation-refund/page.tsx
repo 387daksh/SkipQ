@@ -13,7 +13,8 @@ const sections = [
   {
     title: '2. Cancellation Window',
     body: [
-      'Cancellations are allowed only before the vendor begins preparing the order.',
+      'No return/exchange entertained only replacement will be allowed if you recieve a damanged or spoiled food. it should be reported within 2 hrs from the time of delivery ',
+      'After inspection a new order will be delivered within 3-4 hours if not refund will be initiated',
       'Once an order is marked as “Preparing”, “Ready” or “Dispatched”, the vendor may reject cancellation requests.'
     ]
   },
@@ -21,7 +22,7 @@ const sections = [
     title: '3. Refund Eligibility',
     body: [
       'If the vendor approves the cancellation before preparation, the item amount becomes eligible for refund.',
-      'Refunds are processed to the original payment method. Bank or payment gateway processing times (typically 5–7 business days) may apply.'
+      'Refunds are credited  to the original payment method. Bank or payment gateway processing times (typically 5–7 business days) may apply.'
     ]
   },
   {
@@ -39,8 +40,15 @@ const sections = [
     ]
   },
   {
-    title: '6. Contact',
+  title: '6. Shipping policy ',
     body: [
+      'All the orders will be delivered within 3-4 hours',
+      
+  },
+  {
+    title: '7. Contact',
+    body: [
+      's1 D6 apartment shyam park ext. sahibabad ghaziabad U.P. 201005',
       'Email support: skipq39@gmail.com',
       'Phone support: +91 83839 34397'
     ]
@@ -67,3 +75,4 @@ export default function CancellationRefundPolicyPage() {
     </section>
   )
 }
+
