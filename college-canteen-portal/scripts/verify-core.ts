@@ -117,7 +117,7 @@ async function main() {
 
     // 7. VERIFY IDEMPOTENCY
     console.log('6. Verifying Idempotency...')
-    const duplicateParams = {
+    const duplicateParams: any = {
         vendorId: vendor.id,
         canteenId: canteen.id,
         items: [{ menuItemId: coffee.id, quantity: 2 }],

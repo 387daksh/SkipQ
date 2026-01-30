@@ -3,6 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
-    "types": ["react", "react-native", "expo-router"]
+    "types": ["react", "react-native", "expo-router"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }

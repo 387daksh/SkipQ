@@ -79,8 +79,6 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error('[ADMIN-LEDGER] Error:', error)
     return NextResponse.json({ 
-      error: 'Failed to fetch ledger entries',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to fetch ledger entries'
     }, { status: 500 })
-  }
-}
+  }}

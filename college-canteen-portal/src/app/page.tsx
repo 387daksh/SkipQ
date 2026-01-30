@@ -97,7 +97,7 @@ export default async function HomePage() {
               </Link>
               {!session?.role && (
                  <Link href="/register" className="text-base px-6 py-3 sm:text-xl sm:px-10 sm:py-5 bg-[#06D6A0] text-black border-4 border-black font-black uppercase tracking-wide shadow-[4px_4px_0px_0px_#000000] sm:shadow-[8px_8px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] sm:hover:shadow-[4px_4px_0px_0px_#000000] hover:translate-x-[2px] hover:translate-y-[2px] sm:hover:translate-x-[4px] sm:hover:translate-y-[4px] active:translate-x-[4px] active:translate-y-[4px] sm:active:translate-x-[8px] sm:active:translate-y-[8px] active:shadow-none transition-all rounded-xl sm:rounded-2xl">
-                  Join Game
+                  Get Started
                 </Link>
               )}
             </div>
@@ -110,7 +110,7 @@ export default async function HomePage() {
         <section className="rounded-2xl border-4 border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000000]">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
-              <p className="text-sm font-black uppercase tracking-widest text-slate-500">Welcome Back, Player</p>
+              <p className="text-sm font-black uppercase tracking-widest text-slate-500">Welcome Back</p>
               <h2 className="text-4xl font-black text-black uppercase">{session.user.name}</h2>
               <div className="inline-block px-3 py-1 bg-[#FFD166] border-2 border-black text-xs font-bold uppercase rounded-lg">
                 Role: {session.role}

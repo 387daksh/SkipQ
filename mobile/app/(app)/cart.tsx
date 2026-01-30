@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, Image, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCart } from '../context/CartContext';
-import { SPACING, GAME_UI } from '../constants/theme';
-import { CartHeader } from '../components/cart/CartHeader';
-import { CartItem } from '../components/cart/CartItem';
-import { CartUpsell } from '../components/cart/CartUpsell';
-import { CartBill } from '../components/cart/CartBill';
-import { CartFooter } from '../components/cart/CartFooter';
+import { useCart } from '@/context/CartContext';
+import { SPACING, GAME_UI } from '@/constants/theme';
+import { CartHeader } from '@/components/cart/CartHeader';
+import { CartItem } from '@/components/cart/CartItem';
+import { CartUpsell } from '@/components/cart/CartUpsell';
+import { CartBill } from '@/components/cart/CartBill';
+import { CartFooter } from '@/components/cart/CartFooter';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MotiView } from 'moti';
@@ -89,13 +89,13 @@ export default function CartScreen() {
                             style={[styles.toggleBtn, fulfillmentType === 'TAKEAWAY' && styles.toggleBtnActive]}
                             onPress={() => setFulfillmentType('TAKEAWAY')}
                         >
-                            <Text style={[styles.toggleText, fulfillmentType === 'TAKEAWAY' && styles.toggleTextActive]}>Takeaway</Text>
+                            <Text style={[styles.toggleText, fulfillmentType === 'TAKEAWAY' && styles.toggleTextActive]}>Preorder</Text>
                         </Pressable>
                         <Pressable 
                             style={[styles.toggleBtn, fulfillmentType === 'DINE_IN' && styles.toggleBtnActive]}
                             onPress={() => setFulfillmentType('DINE_IN')}
                         >
-                            <Text style={[styles.toggleText, fulfillmentType === 'DINE_IN' && styles.toggleTextActive]}>Dine In</Text>
+                            <Text style={[styles.toggleText, fulfillmentType === 'DINE_IN' && styles.toggleTextActive]}>Self Order</Text>
                         </Pressable>
                     </View>
                 </View>

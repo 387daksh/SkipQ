@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert 
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Lock, Check, ChevronLeft, KeyRound } from 'lucide-react-native';
-import { resetPassword } from '../api/auth';
-import { COLORS, SPACING, GAME_UI } from '../constants/theme';
+import { resetPassword } from '@/api/auth';
+import { COLORS, SPACING, GAME_UI } from '@/constants/theme';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 export default function ResetPasswordScreen() {

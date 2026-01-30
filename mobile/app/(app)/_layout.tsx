@@ -1,64 +1,21 @@
-import { Tabs } from 'expo-router';
-import { Home, ShoppingBag, Receipt, LogOut, User } from 'lucide-react-native';
-import { View } from 'react-native';
-import { CustomTabBar } from '../components/navigation/CustomTabBar';
+import { Stack } from 'expo-router';
 
 export default function AppLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Home',
-        }}
-      />
-      <Tabs.Screen
-        name="canteen"
-        options={{
-          href: null,
-          title: 'Canteen',
-          tabBarStyle: { display: 'none' }, // Retaining for logic in CustomTabBar
-        }}
-      />
-      <Tabs.Screen
-        name="cart"
-        options={{
-            href: null,
-            title: 'Cart',
-            tabBarStyle: { display: 'none' }
-        }}
-      />
-      <Tabs.Screen
-        name="orders"
-        options={{
-          title: 'Orders',
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-        }}
-      />
-      <Tabs.Screen
-        name="order-details/[id]"
-        options={{
-          href: null,
-          tabBarStyle: { display: 'none' }
-        }}
-      />
-      <Tabs.Screen
-        name="payment"
-        options={{
-          href: null,
-          tabBarStyle: { display: 'none' }
-        }}
-      />
-    </Tabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* The Tabs Layout (Home, Orders, Profile) */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      
+      {/* Stack Screens (Pushed on top of tabs) */}
+      <Stack.Screen name="canteen" options={{ presentation: 'card' }} />
+      <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="order-details/[id]" options={{ presentation: 'card' }} />
+      <Stack.Screen name="payment" options={{ presentation: 'modal' }} />
+      
+      {/* Profile Sub-screens */}
+      <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile', headerShown: true }} />
+      <Stack.Screen name="profile/orders" options={{ title: 'My Orders', headerShown: true }} />
+      <Stack.Screen name="profile/help" options={{ title: 'Help', headerShown: true }} />
+    </Stack>
   );
 }

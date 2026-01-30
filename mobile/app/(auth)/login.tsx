@@ -19,9 +19,9 @@ import Animated, {
     FadeInUp,
 } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { GAME_UI, SPACING, RADIUS, COLORS } from '../constants/theme';
-import { AuthBottomSheet } from '../components/auth/AuthBottomSheet';
-import { AuthForm } from '../components/auth/AuthForm';
+import { GAME_UI, SPACING, RADIUS, COLORS } from '@/constants/theme';
+import { AuthBottomSheet } from '@/components/auth/AuthBottomSheet';
+import { AuthForm } from '@/components/auth/AuthForm';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -31,7 +31,13 @@ interface AuthScreenProps {
     initialMode?: 'login' | 'signup';
 }
 
+// ... imports ...
+import { useTheme } from '@/context/ThemeContext';
+
+// ...
+
 export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
+    const { theme } = useTheme(); // Hook
     const [showSheet, setShowSheet] = useState(false);
     const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
 
@@ -76,12 +82,12 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <StatusBar barStyle="dark-content" backgroundColor={GAME_UI.background} />
-            <View style={styles.container}>
+            <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
+            <View style={[styles.container, { backgroundColor: theme.background }]}>
                 {/* Decorative Background Elements */}
-                <Animated.View style={[styles.decorCircle1, floatStyle]} />
-                <Animated.View style={[styles.decorCircle2, floatStyle]} />
-                <Animated.View style={[styles.decorSquare, floatStyle]} />
+                <Animated.View style={[styles.decorCircle1, floatStyle, { backgroundColor: theme.primaryBtn, borderColor: theme.ink }]} />
+                <Animated.View style={[styles.decorCircle2, floatStyle, { backgroundColor: theme.secondary, borderColor: theme.ink }]} />
+                <Animated.View style={[styles.decorSquare, floatStyle, { backgroundColor: theme.tertiary, borderColor: theme.ink }]} />
 
                 {/* Hero Section */}
                 <View style={styles.heroSection}>
@@ -90,14 +96,18 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
                         entering={FadeInDown.delay(200).springify()}
                         style={styles.logoContainer}
                     >
-                        <Text style={styles.logoText}>SKIPQ</Text>
-                        <View style={styles.logoUnderline} />
+                        {/* Hard Shadow Layer */}
+                        <Text style={[styles.logoText, styles.logoShadow, { color: theme.primaryBtn }]}>SKIPQ</Text>
+                        {/* Main Text */}
+                        <Text style={[styles.logoText, { color: theme.ink }]}>SKIPQ</Text>
+                        
+                        <View style={[styles.logoUnderline, { backgroundColor: theme.tertiary, borderColor: theme.ink }]} />
                     </Animated.View>
 
                     {/* Tagline */}
                     <Animated.Text 
                         entering={FadeInDown.delay(400).springify()}
-                        style={styles.tagline}
+                        style={[styles.tagline, { color: theme.ink }]}
                     >
                         Skip the queue,{'\n'}not the taste.
                     </Animated.Text>
@@ -105,7 +115,7 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
                     {/* Subtitle */}
                     <Animated.Text 
                         entering={FadeInDown.delay(500).springify()}
-                        style={styles.subtitle}
+                        style={[styles.subtitle]}
                     >
                         Order from your favorite campus canteens{'\n'}and pick up when ready.
                     </Animated.Text>
@@ -115,31 +125,21 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
                 <View style={styles.ctaSection}>
                     <Animated.View entering={FadeInUp.delay(600).springify()}>
                         <AnimatedPressable
-                            style={[styles.primaryBtn, loginBtnStyle]}
+                            style={[styles.primaryBtn, loginBtnStyle, { backgroundColor: theme.primaryBtn, borderColor: theme.ink }]}
                             onPress={handleOpenLogin}
-                            onPressIn={() => {
-                                loginBtnScale.value = withSpring(0.96);
-                            }}
-                            onPressOut={() => {
-                                loginBtnScale.value = withSpring(1);
-                            }}
+                            // ...
                         >
-                            <Text style={styles.primaryBtnText}>LOGIN</Text>
+                            <Text style={[styles.primaryBtnText, { color: theme.ink }]}>LOGIN</Text>
                         </AnimatedPressable>
                     </Animated.View>
 
                     <Animated.View entering={FadeInUp.delay(700).springify()}>
                         <AnimatedPressable
-                            style={[styles.secondaryBtn, signupBtnStyle]}
+                            style={[styles.secondaryBtn, signupBtnStyle, { backgroundColor: theme.card, borderColor: theme.ink }]}
                             onPress={handleOpenSignup}
-                            onPressIn={() => {
-                                signupBtnScale.value = withSpring(0.96);
-                            }}
-                            onPressOut={() => {
-                                signupBtnScale.value = withSpring(1);
-                            }}
+                            // ...
                         >
-                            <Text style={styles.secondaryBtnText}>CREATE ACCOUNT</Text>
+                            <Text style={[styles.secondaryBtnText, { color: theme.ink }]}>CREATE ACCOUNT</Text>
                         </AnimatedPressable>
                     </Animated.View>
 
@@ -166,6 +166,9 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
         </GestureHandlerRootView>
     );
 }
+
+// Keep styles for static layout, override colors inline
+
 
 const styles = StyleSheet.create({
     container: {
@@ -226,9 +229,13 @@ const styles = StyleSheet.create({
         fontWeight: '900',
         color: GAME_UI.ink,
         letterSpacing: 6,
-        textShadowColor: GAME_UI.primaryBtn,
-        textShadowOffset: { width: 4, height: 4 },
-        textShadowRadius: 0,
+    },
+    logoShadow: {
+        position: 'absolute',
+        // In RN, absolute element in centered parent aligns to center if left/right undefined
+        color: GAME_UI.primaryBtn,
+        zIndex: -1,
+        transform: [{ translateX: 4 }, { translateY: 4 }]
     },
     logoUnderline: {
         width: 180,

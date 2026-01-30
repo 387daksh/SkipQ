@@ -30,11 +30,25 @@ export async function GET(req: Request) {
       }, { status: 400 })
     }
 
-    const dateRange = {
-      start: new Date(start),
-      end: new Date(end)
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json({ 
+        error: 'Invalid date format for start or end parameter' 
+      }, { status: 400 })
     }
 
+    if (startDate > endDate) {
+      return NextResponse.json({ 
+        error: 'Start date must be before end date' 
+      }, { status: 400 })
+    }
+
+    const dateRange = {
+      start: startDate,
+      end: endDate
+    }
     const filters = { dateRange }
 
     // Generate all reports in parallel within transaction

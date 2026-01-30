@@ -80,7 +80,7 @@ export function Navbar({ session }: NavbarProps) {
                         ) : (
                             <div className="flex items-center gap-3">
                                 <span className="hidden text-right text-xs font-bold leading-tight sm:block">
-                                    <span className="block text-gray-400">Player 1</span>
+                                    <span className="block text-gray-400">User</span>
                                     <span className="block text-black">{session.user?.name?.split(' ')[0]}</span>
                                 </span>
                                 <form action="/api/auth/logout" method="POST">

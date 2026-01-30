@@ -21,9 +21,8 @@ export async function GET(req: Request) {
     const end = searchParams.get('end')
     const orderType = searchParams.get('orderType')
     const paymentStatus = searchParams.get('paymentStatus')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
-
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10) || 50, 1), 500)
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10) || 0, 0)
     const where: any = {}
     
     if (vendorId) where.vendorId = vendorId

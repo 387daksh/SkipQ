@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert,
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Mail, ChevronLeft } from 'lucide-react-native';
-import { requestPasswordReset } from '../api/auth';
-import { COLORS, SPACING, GAME_UI } from '../constants/theme';
+import { requestPasswordReset } from '@/api/auth';
+import { COLORS, SPACING, GAME_UI } from '@/constants/theme';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 export default function ForgotPasswordScreen() {

@@ -1,13 +1,13 @@
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
-import { OrderDetailsSkeleton } from '../../components/orders/OrderDetailsSkeleton';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator, Alert, Linking } from 'react-native';
+import { OrderDetailsSkeleton } from '@/components/orders/OrderDetailsSkeleton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SPACING, GAME_UI } from '../../constants/theme';
+import { SPACING, GAME_UI } from '@/constants/theme';
 import { ChevronLeft, Clock, MapPin, Receipt, CheckCircle2, Phone } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BlurView } from 'expo-blur';
 import { useEffect, useState } from 'react';
-import { api } from '../../services/api';
+import { api } from '@/services/api';
 
 export default function OrderDetailsScreen() {
     const { id } = useLocalSearchParams();
@@ -36,6 +36,11 @@ export default function OrderDetailsScreen() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCallSupport = () => {
+        const phoneNumber = order?.canteen?.phone || '+919876543210';
+        Linking.openURL(`tel:${phoneNumber}`);
     };
 
     if (loading) {
@@ -176,7 +181,7 @@ export default function OrderDetailsScreen() {
                 </View>
 
                 {/* Support Button */}
-                <Pressable style={styles.supportButton}>
+                <Pressable style={styles.supportButton} onPress={handleCallSupport}>
                     <Phone size={20} color={GAME_UI.ink} strokeWidth={3} />
                     <Text style={styles.supportText}>CALL SUPPORT</Text>
                 </Pressable>

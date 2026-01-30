@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../services/api';
+import { api } from '@/services/api';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, ChefHat, ShoppingBag, Receipt } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { OrderTracker } from '../components/order/OrderTracker';
+import { OrderTracker } from '@/components/order/OrderTracker';
 
 export default function OrderDetailsScreen() {
     const { orderId } = useLocalSearchParams();

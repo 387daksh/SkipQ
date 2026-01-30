@@ -21,10 +21,12 @@ const nextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  // @ts-ignore - Next.js types might not be updated for this yet
+  // Explicitly set root to avoid "multiple lockfiles" warning
+  // @ts-ignore
   turbopack: {
-    root: path.resolve(__dirname, ".."),
+    root: path.resolve(__dirname),
   },
+
   async headers() {
     return [
       {

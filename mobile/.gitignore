@@ -8,9 +8,7 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 # Expo
-.env.local
-.env.development
-.env.production
+
 config.local.ts
 
 # IDE

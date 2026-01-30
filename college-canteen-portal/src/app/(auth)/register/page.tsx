@@ -78,7 +78,7 @@ export default function RegisterPage() {
             <div className="inline-block p-2 bg-[#06D6A0] border-2 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] rounded-full mb-1 animate-wiggle">
                <UserPlus className="w-6 h-6 text-black" strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight text-black">New Player</h2>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-black">Create Account</h2>
             <p className="text-slate-600 font-bold border-b-2 border-slate-200 inline-block pb-0.5 text-xs">Create profile to start</p>
           </div>
 
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   className="w-full bg-slate-50 border-2 border-black p-2 rounded-md font-bold focus:outline-none focus:shadow-[2px_2px_0px_#06D6A0] focus:bg-white transition-all text-sm"
-                  placeholder="player@skipq.com"
+                  placeholder="user@skipq.com"
                 />
               </div>
 
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                 disabled={loading}
                 className="w-full bg-[#06D6A0] border-2 border-black text-black font-black uppercase tracking-widest py-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000000] hover:shadow-[4px_4px_0px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] active:shadow-[0px_0px_0px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs"
               >
-                {loading ? 'CREATING...' : 'JOIN GAME'}
+                {loading ? 'CREATING...' : 'SIGN UP'}
               </button>
 
               <div className="relative py-1">
@@ -159,7 +159,7 @@ export default function RegisterPage() {
           )}
 
           <p className="text-center text-slate-600 font-bold text-xs">
-            Already a Player?{' '}
+            Already have an account?{' '}
             <Link href={`/login?next=${encodedNext}`} className="text-[#06D6A0] underline decoration-2 underline-offset-2 hover:text-black transition-colors">
               Login Here
             </Link>

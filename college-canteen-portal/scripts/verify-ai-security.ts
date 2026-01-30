@@ -15,6 +15,7 @@ async function verify() {
             method: 'SCRIPT',
             authType: 'API_KEY',
             authId: 'test_script',
+            severity: 'INFO',
             metadata: { note: 'This is a test' }
         });
         const auditCount = await prisma.auditLog.count();

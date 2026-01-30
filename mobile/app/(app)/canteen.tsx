@@ -1,264 +1,237 @@
-import { View, Text, StyleSheet, SectionList } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { getMenu } from '../api/canteens';
-import { useCart } from '../context/CartContext';
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import Animated, {
-  useAnimatedScrollHandler,
-  useSharedValue,
-  useAnimatedStyle,
-  interpolate,
-  Extrapolation,
-  withTiming
-} from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { COLORS, SPACING, GAME_UI } from '../constants/theme';
-import { CanteenHeader } from '../components/canteen/CanteenHeader';
-import { MenuCategoryNav } from '../components/canteen/MenuCategoryNav';
-import { MenuItemCard } from '../components/canteen/MenuItemCard';
-import { StickyCartBar } from '../components/canteen/StickyCartBar';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList } from '@shopify/flash-list';
+import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
+import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
-import { Pressable } from 'react-native';
-import { CanteenFilterBar } from '../components/canteen/CanteenFilterBar';
-import { MenuSkeleton } from '../components/canteen/MenuSkeleton';
+import { useState, useCallback, useMemo, useRef } from 'react';
 
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
-const HEADER_HEIGHT = 280;
+import { getMenu } from '@/api/canteens';
+import { useTheme } from '@/context/ThemeContext';
+import { useCart } from '@/context/CartContext';
+import { GAME_UI, SPACING, COLORS } from '@/constants/theme';
+import { MenuItemCard } from '@/components/canteen/MenuItemCard';
+import { CanteenHeader } from '@/components/canteen/CanteenHeader';
+import { FloatingMenuBtn } from '@/components/canteen/FloatingMenuBtn';
+import { StickyCartBar } from '@/components/canteen/StickyCartBar';
+import { FilterModal } from '@/components/canteen/FilterModal';
+import { MenuModal } from '@/components/canteen/MenuModal';
+import { MenuSkeleton } from '@/components/canteen/MenuSkeleton';
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as React.ComponentType<any>;
 
 export default function CanteenScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { addItem, removeItem, items: cartItems, total } = useCart();
-  const scrollY = useSharedValue(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const { theme, isDark } = useTheme();
+
+  // Refs
+  const flatListRef = useRef<any>(null);
+
+  // State
   const [filterType, setFilterType] = useState<'all' | 'veg' | 'non-veg'>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-  const sectionListRef = useRef<any>(null);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['menu', id],
-    queryFn: () => getMenu(id as string),
-    enabled: !!id
-  });
-
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showMenuModal, setShowMenuModal] = useState(false);
+  
+  // Animation
+  const scrollY = useSharedValue(0);
   const scrollHandler = useAnimatedScrollHandler(event => {
     scrollY.value = event.contentOffset.y;
   });
 
-  // Sticky Category Bar Animation (Fade in when scrolling past header)
-  const stickyNavStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [HEADER_HEIGHT - 60, HEADER_HEIGHT], // Fade in just before header is gone
-      [0, 1],
-      Extrapolation.CLAMP
-    );
-    return {
-      opacity,
-      transform: [
-        { translateY: interpolate(scrollY.value, [HEADER_HEIGHT - 60, HEADER_HEIGHT], [-20, 0], Extrapolation.CLAMP) }
-      ],
-      zIndex: 10
-    };
+  // Data Fetching
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['canteen', id],
+    queryFn: () => getMenu(id as string),
+    enabled: !!id,
   });
 
-  const handleAddItem = useCallback((item: any) => {
-    if (!data?.canteen) return;
-    const vendorSettings = data.canteen.vendor || {};
-    addItem({ 
-      id: item.id, 
-      name: item.name, 
-      price: item.priceCents / 100, 
-      canteenId: data.canteen.id, 
-      canteenName: data.canteen.name,
-      selfOrderFeeRate: vendorSettings.selfOrderFeeRate ?? 0.015,
-      preOrderFeeRate: vendorSettings.preOrderFeeRate ?? 0.03
+  // Derived State
+  const quantityMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    cartItems.forEach(item => {
+        if (item.canteenId === id) {
+             map[item.id] = item.quantity;
+        }
     });
-  }, [addItem, data]);
+    return map;
+  }, [cartItems, id]);
+
+  const processedItems = useMemo(() => {
+    if (!data?.items) return []; // Use data.items
+    let items = [...data.items];
+
+    // Create Section Map
+    const sectionNameMap: Record<string, string> = {};
+    if (data.sections) {
+        data.sections.forEach((s: any) => sectionNameMap[s.id] = s.name);
+    }
+
+    // Filter
+    if (filterType === 'veg') items = items.filter((i: any) => i.isVeg || i.name.toLowerCase().includes('veg'));
+    if (filterType === 'non-veg') items = items.filter((i: any) => !i.isVeg && !i.name.toLowerCase().includes('veg')); 
+
+    // Sort
+    if (sortOrder === 'asc') items.sort((a: any, b: any) => a.priceCents - b.priceCents);
+    else if (sortOrder === 'desc') items.sort((a: any, b: any) => b.priceCents - a.priceCents);
+    
+    // Grouping
+    const grouped: Record<string, any[]> = {};
+    items.forEach((item: any) => {
+        const cat = item.sectionId ? sectionNameMap[item.sectionId] : 'Other'; // Map sectionId
+        const categoryName = cat || 'Other';
+        if (!grouped[categoryName]) grouped[categoryName] = [];
+        grouped[categoryName].push({ ...item, isVeg: item.isVeg ?? item.name.toLowerCase().includes('veg') }); // Inject isVeg if missing
+    });
+
+    const flatList: any[] = [];
+    // Sort sections based on data.sections order if possible
+    const sectionOrder = data.sections?.map((s: any) => s.name) || [];
+    // Add "Other" at end
+    if (!sectionOrder.includes('Other')) sectionOrder.push('Other');
+
+    // Iterate keys in order
+    // But grouped keys might not match exactly if I filtered stuff out.
+    // Better: Iterate sectionOrder and verify if it exists in grouped.
+    sectionOrder.forEach((cat: string) => {
+        if (grouped[cat] && grouped[cat].length > 0) {
+            flatList.push({ type: 'header', title: cat, id: `header-${cat}` });
+            flatList.push(...grouped[cat]);
+        }
+    });
+
+    // Handle any categories not in order (unlikely if mapped correctly)
+    Object.keys(grouped).forEach(cat => {
+        if (!sectionOrder.includes(cat)) {
+             flatList.push({ type: 'header', title: cat, id: `header-${cat}` });
+             flatList.push(...grouped[cat]);
+        }
+    });
+    
+    return flatList;
+  }, [data, filterType, sortOrder]);
+
+  const sectionsMap = useMemo(() => {
+     if (!data?.sections) return [];
+     // Return sections that actually have items (after filter?)
+     // For now, show all sections from API
+     return data.sections.map((s: any) => ({ 
+         id: `header-${s.name}`, 
+         name: s.name,
+         count: 0 // TODO: calculate count
+     }));
+  }, [data]);
+
+  const handleAddItem = useCallback((item: any) => {
+    addItem({
+        id: item.id,
+        name: item.name,
+        price: item.priceCents / 100, // API uses priceCents, Cart uses price (dollars/rupees)
+        canteenId: id as string,
+        canteenName: data?.canteen?.name,
+        // Optional fields if CartItem needs them
+    });
+  }, [addItem, id, data]);
 
   const handleRemoveItem = useCallback((itemId: string) => {
     removeItem(itemId);
   }, [removeItem]);
 
-  // 2. Sort
-  const processedItems = useMemo(() => {
-    if (!data || !data.items) return [];
-    let result = [...data.items];
+  const handleCategorySelect = (headerId: string) => {
+      // TODO: Scroll to index if we map ids to indices
+  };
 
-    if (filterType === 'veg') {
-      result = result.filter((item: any) => item.isVeg);
-    } else if (filterType === 'non-veg') {
-      result = result.filter((item: any) => !item.isVeg);
+  const renderItem = useCallback(({ item }: any) => {
+    if (item.type === 'header') {
+      return (
+        <View style={[styles.sectionHeader, { backgroundColor: theme.background }]}>
+          <View style={[styles.sectionDivider, { borderColor: theme.ink }]} />
+          <Text style={[styles.sectionTitle, { color: theme.ink }]}>{item.title}</Text>
+        </View>
+      );
     }
-
-    if (sortOrder) {
-      result.sort((a: any, b: any) => {
-        if (sortOrder === 'asc') return a.priceCents - b.priceCents;
-        return b.priceCents - a.priceCents;
-      });
-    }
-    return result;
-  }, [data, filterType, sortOrder]);
-
-  // 3. Prepare Sections Data Safe Calculation
-  const sectionsData = useMemo(() => {
-    if (!data?.sections || !processedItems) return [];
-    
-    // validSectionIds
-    const validSectionIds = new Set(data.sections.map((s: any) => s.id));
-    
-    // Main sections
-    let result = data.sections.map((section: any) => ({
-      id: section.id,
-      title: section.name,
-      data: processedItems.filter((item: any) => item.sectionId === section.id)
-    })).filter((s: any) => s.data.length > 0);
-
-    // Other items
-    const otherItems = processedItems.filter((item: any) => !item.sectionId || !validSectionIds.has(item.sectionId));
-    if (otherItems.length > 0) {
-      result.push({ id: 'other', title: 'Other Items', data: otherItems });
-    }
-    
-    return result;
-  }, [data, processedItems]);
-
-  // Initialize selected category if empty
-  useEffect(() => {
-    if (!selectedCategory && sectionsData.length > 0) {
-      setSelectedCategory(sectionsData[0].id);
-    }
-  }, [selectedCategory, sectionsData]);
-
-  if (isLoading) {
     return (
-      <MenuSkeleton />
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <View style={styles.center}>
-        <StatusBar style="dark" />
-        <Text style={[styles.loadingText, { color: '#ef4444' }]}>
-          {error ? `Error: ${(error as Error).message}` : 'Canteen not found'}
-        </Text>
-        <Pressable onPress={() => router.back()} style={{ marginTop: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: GAME_UI.ink }}>Go Back</Text>
-        </Pressable>
+      <View style={styles.itemWrapper}>
+        <MenuItemCard
+          item={item}
+          quantity={quantityMap[item.id] || 0}
+          onAdd={handleAddItem}
+          onRemove={handleRemoveItem}
+        />
       </View>
     );
-  }
-  
-  const { canteen } = data; // sectionsData is already calculated above
+  }, [quantityMap, handleAddItem, handleRemoveItem, theme]);
 
-  const getItemQuantity = (itemId: string) => {
-    const item = cartItems.find(i => i.id === itemId);
-    return item ? item.quantity : 0;
-  };
-
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    // Find section index
-    const sectionIndex = sectionsData.findIndex((s: any) => s.id === categoryId);
-    if (sectionIndex !== -1 && sectionListRef.current) {
-      sectionListRef.current.scrollToLocation({
-        sectionIndex,
-        itemIndex: 0,
-        viewOffset: 100, // Offset for sticky header
-        animated: true
-      });
-    }
-  };
+  if (isLoading) return <MenuSkeleton />;
+  if (error || !data) return (
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.ink }}>Error loading menu.</Text>
+        <Pressable onPress={() => router.back()}><Text style={{ color: theme.primary }}>Go Back</Text></Pressable>
+      </View>
+  );
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
 
-      {/* Absolute Back Button (Top Left) */}
-      {/* Absolute Back Button (Top Left) */}
-      <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <View style={styles.backBtnBlock}>
-          <ChevronLeft color={GAME_UI.ink} size={24} strokeWidth={3} />
+      {/* --- Fixed Navigation Controls (Top) --- */}
+      <Pressable 
+        onPress={() => router.back()} 
+        style={[styles.fixedBtn, { left: 20, top: Math.max(insets.top, 20) + 10 }]}
+        hitSlop={20}
+      >
+        <View style={[styles.backBtnCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)' }]}>
+          <ChevronLeft color={theme.ink} size={24} strokeWidth={3} />
         </View>
       </Pressable>
 
-      {/* Sticky Header Overlay */}
-      <Animated.View style={[
-        styles.stickyNavContainer, 
-        stickyNavStyle,
-        { paddingTop: Math.max(insets.top, 20) }
-      ]}>
-          <View style={styles.stickyNavBg}>
-            <CanteenFilterBar
-              filterType={filterType}
-              setFilterType={setFilterType}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-            />
-            <MenuCategoryNav
-              categories={sectionsData.map((s: any) => ({ id: s.id, name: s.title }))}
-              selectedCategory={selectedCategory}
-              onSelect={handleCategorySelect}
-            />
-        </View>
-      </Animated.View>
-
-      <AnimatedSectionList
-        ref={sectionListRef}
-        sections={sectionsData}
-        keyExtractor={(item: any) => item.id}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        stickySectionHeadersEnabled={false} // We integrate categories differently
-        initialNumToRender={10}
-        windowSize={5}
-        maxToRenderPerBatch={5}
-        removeClippedSubviews={true}
-        ListHeaderComponent={() => (
-          <View>
-            <CanteenHeader canteen={canteen} scrollY={scrollY} />
-            {/* Static Category Nav (Scrolls with list) */}
-            <View style={styles.staticNavContainer}>
-              <CanteenFilterBar
+      <View style={{ flex: 1 }}>
+        <AnimatedFlashList
+          ref={flatListRef}
+          data={processedItems}
+          renderItem={renderItem}
+          estimatedItemSize={180}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          getItemType={(item: any) => item.type === 'header' ? 'sectionHeader' : 'row'}
+          extraData={[quantityMap, theme]}
+          ListHeaderComponent={() => (
+            <CanteenHeader 
+                canteen={data.canteen} 
+                scrollY={scrollY}
+                onFilterPress={() => setShowFilterModal(true)}
                 filterType={filterType}
                 setFilterType={setFilterType}
-                sortOrder={sortOrder}
-                setSortOrder={setSortOrder}
-              />
-              <MenuCategoryNav
-                categories={sectionsData.map((s: any) => ({ id: s.id, name: s.title }))}
-                selectedCategory={selectedCategory}
-                onSelect={handleCategorySelect}
-              />
-            </View>
-          </View>
-        )}
-        renderSectionHeader={({ section: { title } }: any) => (
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionDivider} />
-            <Text style={styles.sectionTitle}>{title}</Text>
-          </View>
-        )}
-        renderItem={({ item }: any) => (
-          <View style={styles.itemWrapper}>
-            <MenuItemCard
-              item={item}
-              quantity={getItemQuantity(item.id)}
-              onAdd={handleAddItem}
-              onRemove={handleRemoveItem}
             />
-          </View>
-        )}
+          )}
+        />
+      </View>
+
+      <FloatingMenuBtn onPress={() => setShowMenuModal(true)} hasCart={cartItems.length > 0} />
+      <StickyCartBar itemCount={cartItems.length} total={total} />
+      
+      <FilterModal 
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
       />
 
-      {/* Sticky Cart Bar */}
-      <StickyCartBar itemCount={cartItems.length} total={total} />
+      <MenuModal 
+        visible={showMenuModal}
+        onClose={() => setShowMenuModal(false)}
+        categories={sectionsMap.map((s: { id: string; name: string; count: number }) => ({ id: s.id, name: s.name, count: s.count }))}
+        onSelectCategory={handleCategorySelect}
+      />
+
     </View>
   );
 }
@@ -274,50 +247,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: GAME_UI.background,
   },
-  loadingText: {
-    color: GAME_UI.ink,
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: '800',
-    textTransform: 'uppercase'
-  },
-  backButton: {
+  fixedBtn: {
     position: 'absolute',
-    top: 50,
-    left: 20,
     zIndex: 100,
+    ...GAME_UI.shadows.button,
   },
-  backBtnBlock: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: GAME_UI.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...GAME_UI.shadows.button
-  },
-  stickyNavContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingTop: 40, // Status bar area
-    paddingBottom: 0,
-    backgroundColor: GAME_UI.background,
-    zIndex: 90,
-    borderBottomWidth: 2,
-    borderBottomColor: GAME_UI.ink,
-  },
-  stickyNavBg: {
-    backgroundColor: GAME_UI.background,
-  },
-  staticNavContainer: {
-    backgroundColor: GAME_UI.background,
-    zIndex: 1,
+  backBtnCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 4,
   },
   sectionHeader: {
     paddingHorizontal: SPACING.m,
-    paddingTop: SPACING.l,
+    paddingTop: SPACING.m,
     paddingBottom: SPACING.s,
     backgroundColor: GAME_UI.background,
   },
@@ -331,7 +281,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     backgroundColor: GAME_UI.primaryBtn,
-    borderRadius: 0,
     marginBottom: 6,
     borderWidth: 1,
     borderColor: GAME_UI.ink

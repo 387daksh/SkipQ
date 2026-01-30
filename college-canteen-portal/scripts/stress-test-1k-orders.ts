@@ -113,7 +113,7 @@ async function createSingleOrder(userId: string, canteenId: string, vendorId: st
     // 2. Calculations
     let subtotalCents = 0
     let totalTaxCents = 0
-    const orderItemsData = []
+    const orderItemsData: any[] = []
 
     for (const inputItem of selectedItems) {
         const dbItem = menuItems.find((m: any) => m.id === inputItem.menuItemId)

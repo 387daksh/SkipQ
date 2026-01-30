@@ -39,8 +39,7 @@ async function main() {
       type: { in: ['SALE', 'REFUND'] }
     }
   })
-  console.log(`\nLeger Entries (Revenue Report Source): ${ledgerCount}`)
-
+  console.log(`\nLedger Entries (Revenue Report Source): ${ledgerCount}`)
   // 5. Explicit Check: SELF_ORDER vs PRE_ORDER in Ledger
   const ledgerByType = await prisma.ledgerEntry.groupBy({
     by: ['orderType'],

@@ -52,9 +52,5 @@ export async function GET(
 
   } catch (error) {
     console.error('[ADMIN-ORDER-DETAIL] Error:', error)
-    return NextResponse.json({ 
-      error: 'Failed to fetch order',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
-  }
-}
+    return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 })
+  }}

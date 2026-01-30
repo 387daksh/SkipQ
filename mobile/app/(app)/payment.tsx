@@ -2,16 +2,16 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Linking, S
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { COLORS, RADIUS, SPACING, SHADOWS, GAME_UI } from '../constants/theme';
+import { COLORS, RADIUS, SPACING, SHADOWS, GAME_UI } from '@/constants/theme';
 import { StatusBar } from 'expo-status-bar';
 import { MotiView } from 'moti';
 import { ChevronLeft, Lock, ShieldCheck, Wallet, CreditCard, Banknote, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useCart } from '../context/CartContext';
-import { api } from '../services/api';
+import { useCart } from '@/context/CartContext';
+import { api } from '@/services/api';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RazorpayCheckout as RazorpayWebView } from '../components/RazorpayCheckout'; // Import WebView Component as alias
+import { RazorpayCheckout as RazorpayWebView } from '@/components/RazorpayCheckout'; // Import WebView Component as alias
 import { Modal } from 'react-native'; // Import Modal 
 
 // Safe import for Razorpay to avoid crashes in Expo Go
