@@ -40,7 +40,7 @@ const sections = [
     ]
   },
   {
-  title: '6. Shipping policy ',
+    title: '6. Shipping policy ',
     body: [
       'All the orders will be delivered within 3-4 hours',
     ]
@@ -75,4 +75,3 @@ export default function CancellationRefundPolicyPage() {
     </section>
   )
 }
-
